@@ -199,6 +199,26 @@ public class PolyphenyDriverTests
         connection.Close();
         return Task.CompletedTask;
     }
+
+    [Test]
+    public Task ShouldAbleToQueryCypher()
+    {
+        var connection = PolyphenyDriver.OpenConnection("localhost:20590,pa:");
+        connection.Open();
+        
+        var command = new PolyphenyCommand().
+            WithConnection(connection).
+            WithCommandText("CREATE (n:Org {id: 1, name: \"Demo\"})");
+        var result = command.ExecuteQueryCypher();
+        Assert.That(result, Is.Not.Null);
+        
+        Console.WriteLine(result);
+        
+        Console.WriteLine(result);
+
+        connection.Close();
+        return Task.CompletedTask;
+    }
     
     [Test]
     public Task ShouldAbleToCommitTransaction()

@@ -212,6 +212,41 @@ namespace PolyphenyDotNetDriver
             return reader;
         }
 
+        public GraphFrame ExecuteQueryCypher() => ExecuteQueryCypherAsync(CancellationToken.None).GetAwaiter().GetResult();
+        private async Task<GraphFrame> ExecuteQueryCypherAsync(CancellationToken cancellationToken)
+        {
+            if (connection == null)
+            {
+                throw new InvalidOperationException("Connection property must be non-null");
+            }
+
+            var request = new Request()
+            {
+                ExecuteUnparameterizedStatementRequest = new ExecuteUnparameterizedStatementRequest()
+                {
+                    LanguageName = "cypher",
+                    Statement = CommandText,
+                }
+            };
+
+            var response = await this.connection.SendRecv(request);
+            var tmpId = response?.StatementResponse?.StatementId;
+            
+            var newResponse = await this.connection.Receive();
+            if (newResponse?.StatementResponse?.StatementId != tmpId)
+            {
+                throw new Exception("StatementId mismatch");
+            }
+            
+            var graphData = newResponse?.StatementResponse?.Result?.Frame?.GraphFrame;
+            if (graphData == null)
+            {
+                throw new Exception("Query should return graph data, however the result is empty");
+            }
+            
+            return graphData;
+        } 
+        
         public Dictionary<object, object>[] ExecuteQueryMongo() => ExecuteQueryMongoAsync(CancellationToken.None).GetAwaiter().GetResult();
         private async Task<Dictionary<object, object>[]> ExecuteQueryMongoAsync(CancellationToken cancellationToken)
         {
