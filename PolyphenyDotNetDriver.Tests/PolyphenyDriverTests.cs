@@ -208,7 +208,7 @@ public class PolyphenyDriverTests
         
         var command = new PolyphenyCommand().
             WithConnection(connection).
-            WithCommandText("CREATE (n:Org {id: 1, name: \"Demo\"})");
+            WithCommandText("MATCH (c:customers) WHERE c.name = \"Maria\" OR c.name = \"Daniel\" RETURN c");
         var result = command.ExecuteQueryCypher();
         Assert.That(result, Is.Not.Null);
         
